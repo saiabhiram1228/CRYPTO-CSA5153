@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <string.h>
+#include <openssl/aes.h>
+
+// Function to perform encryption using ECB mode
+void encrypt_ecb(const unsigned char *plaintext, const unsigned char *key, unsigned char *ciphertext, size_t size) {
+    AES_KEY aes_key;
+    AES_set_encrypt_key(key, 128, &aes_key);
+
+    for (size_t i = 0; i < size; i += AES_BLOCK_SIZE) {
+        AES_encrypt(plaintext + i, ciphertext + i, &aes_key);
+    }
+}
+
+// Function to perform encryption using CBC mode
+void encrypt_cbc(const unsigned char *plaintext, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext, size_t size) {
+    AES_KEY aes_key;
+    AES_set_encrypt_key(key, 128, &aes_key);
+
+    unsigned char previous_block[AES_BLOCK_SIZE];
+    memcpy(previous_block, iv, AES_BLOCK_SIZE);
+
+    for (size_t i = 0; i < size; i += AES_BLOCK_SIZE) {
+        for (size_t j = 0; j < AES_BLOCK_SIZE; ++j) {
+            plaintext[i + j] ^= previous_block[j];
+        }
+
+        AES_encrypt(plaintext + i, ciphertext + i, &aes_key);
+        memcpy(previous_block, ciphertext + i, AES_BLOCK_SIZE);
+    }
+}
+
+// Function to perform encryption using CFB mode
+void encrypt_cfb(const unsigned char *plaintext, const unsigned char *key, const unsigned char *iv, unsigned char *ciphertext, size_t size) {
+    AES_KEY aes_key;
+    AES_set_encrypt_key(key, 128, &aes_key);
+
+    unsigned char feedback[AES_BLOCK_SIZE];
+    memcpy(feedback, iv, AES_BLOCK_SIZE);
+
+    for (size_t i = 0; i < size; i += AES_BLOCK_SIZE) {
+        AES_encrypt(feedback, feedback, &aes_key);
+
+        for (size_t j = 0; j < AES_BLOCK_SIZE; ++j) {
+            ciphertext[i + j] = plaintext[i + j] ^ feedback[j];
+        }
+
+        memcpy(feedback, ciphertext + i, AES_BLOCK_SIZE);
+    }
+}
+
+int main() {
+    // Sample key (128 bits)
+    const unsigned char key[16] = "0123456789ABCDEF";
+
+    // Sample plaintext (multiple of block size)
+    const unsigned char plaintext[] = "This is a sample text";
+
+    // Sample IV (Initialization Vector) for CBC and CFB modes
+    const unsigned char iv[16] = "RandomIV12345678";
+
+    // Buffer for ciphertext
+    unsigned char ciphertext_ecb[sizeof(plaintext)];
+    unsigned char ciphertext_cbc[sizeof(plaintext)];
+    unsigned char ciphertext_cfb[sizeof(plaintext)];
+
+    // Perform encryption using ECB mode
+    encrypt_ecb(plaintext, key, ciphertext_ecb, sizeof(plaintext));
+
+    // Perform encryption using CBC mode
+    encrypt_cbc(plaintext, key, iv, ciphertext_cbc, sizeof(plaintext));
+
+    // Perform encryption using CFB mode
+    encrypt_cfb(plaintext, key, iv, ciphertext_cfb, sizeof(plaintext));
+
+    // Print the results
+    printf("ECB Mode:\n");
+    printf("Plaintext: %s\n", plaintext);
+    printf("Ciphertext: ");
+    for (size_t i = 0; i < sizeof(plaintext); ++i) {
+        printf("%02X", ciphertext_ecb[i]);
+    }
+    printf("\n\n");
+
+    printf("CBC Mode:\n");
+    printf("Plaintext: %s\n", plaintext);
+    printf("Ciphertext: ");
+    for (size_t i = 0; i < sizeof(plaintext); ++i) {
+        printf("%02X", ciphertext_cbc[i]);
+    }
+    printf("\n\n");
+
+    printf("CFB Mode:\n");
+    printf("Plaintext: %s\n", plaintext);
+    printf("Ciphertext: ");
+    for (size_t i = 0; i < sizeof(plaintext); ++i) {
+        printf("%02X", ciphertext_cfb[i]);
+    }
+    printf("\n");
+
+    return 0;
+}

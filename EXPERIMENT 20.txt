@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <string.h>
+
+// Function to perform ECB mode encryption
+void ecb_encrypt(char *plaintext, char *key, int block_size) {
+    int len = strlen(plaintext);
+    int num_blocks = len / block_size;
+
+    for (int i = 0; i < num_blocks; i++) {
+        for (int j = 0; j < block_size; j++) {
+            plaintext[i * block_size + j] ^= key[j];
+        }
+    }
+}
+
+// Function to perform ECB mode decryption
+void ecb_decrypt(char *ciphertext, char *key, int block_size) {
+    int len = strlen(ciphertext);
+    int num_blocks = len / block_size;
+
+    for (int i = 0; i < num_blocks; i++) {
+        for (int j = 0; j < block_size; j++) {
+            ciphertext[i * block_size + j] ^= key[j];
+        }
+    }
+}
+
+int main() {
+    // Example usage
+    char plaintext[] = "Hello, ECB!";
+    char key[] = "secret";
+
+    // Print original plaintext
+    printf("Original Plaintext: %s\n", plaintext);
+
+    // Encrypt the plaintext using ECB mode
+    ecb_encrypt(plaintext, key, 8);
+
+    // Print the ciphertext
+    printf("Ciphertext: %s\n", plaintext);
+
+    // Decrypt the ciphertext using ECB mode
+    ecb_decrypt(plaintext, key, 8);
+
+    // Print the decrypted plaintext
+    printf("Decrypted Plaintext: %s\n", plaintext);
+
+    return 0;
+}

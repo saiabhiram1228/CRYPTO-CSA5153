@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include <stdint.h>
+
+// Function to perform Diffie-Hellman key exchange
+uint64_t diffie_hellman(uint64_t x, uint64_t g, uint64_t q) {
+    return (g * x) % q;
+}
+
+int main() {
+    // Public parameters
+    uint64_t g = 2;  // Public base
+    uint64_t q = 23; // Large prime modulus
+
+    // Secret numbers
+    uint64_t x = 6; // Alice's secret
+    uint64_t y = 15; // Bob's secret
+
+    // Public values
+    uint64_t A = diffie_hellman(x, g, q);
+    uint64_t B = diffie_hellman(y, g, q);
+
+    // Shared secret computation (insecure)
+    uint64_t shared_key_A = diffie_hellman(x, B, q); // Eve could compute this directly
+
+    // Display the results
+    printf("Public values: A=%llu, B=%llu\n", A, B);
+    printf("Insecure shared key for Alice: %llu\n", shared_key_A);
+
+    return 0;
+}

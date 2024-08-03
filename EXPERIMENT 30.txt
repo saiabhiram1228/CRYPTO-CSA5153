@@ -1,0 +1,35 @@
+#include <stdio.h>
+#include <stdint.h>
+
+// Simple substitution for the encryption function (replace with a real encryption function)
+uint64_t encrypt(uint64_t block, uint64_t key) {
+    return block ^ key; // This is a simple XOR operation; replace with a real encryption function
+}
+
+// Function to compute the CBC-MAC for a one-block message
+uint64_t cbc_mac_one_block(uint64_t key, uint64_t message) {
+    return encrypt(message, key);
+}
+
+int main() {
+    // Key
+    uint64_t key = 0x123456789ABCDEF0;
+
+    // One-block message
+    uint64_t X = 0x1122334455667788;
+
+    // Compute the CBC-MAC for the one-block message
+    uint64_t T = cbc_mac_one_block(key, X);
+
+    // Two-block message
+    uint64_t X_concat_X_xor_T = X | (X ^ T);
+
+    // Adversary computes the MAC for the two-block message using the known MAC for X
+    uint64_t T_adversary = cbc_mac_one_block(key, X_concat_X_xor_T);
+
+    // Display the results
+    printf("Original CBC-MAC for X: %llx\n", T);
+    printf("Adversary's computed CBC-MAC for X || (X XOR T): %llx\n", T_adversary);
+
+    return 0;
+}
